@@ -1,0 +1,120 @@
+%% Package foldbooklet
+%%
+%% This work may be distributed and/or modified under the conditions of
+%% the LaTeX Project Public License, either version 1.3 of this license
+%% or (at your option) any later version. The latest version of this
+%% license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX version
+%% 2005/12/01 or later.
+%%
+%% This work has the LPPL maintenance status `author-maintained'.
+%%
+%% The Current Maintainer of this work is Davide Campagnari <davide (dot) campa (at) gmail.com>
+%%
+%% This work consists of the file foldbooklet.sty only.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{foldbooklet}[2023/10/09 v0.0b]
+
+\newdimen\fld@bkl@v  \fld@bkl@v1cm
+\newdimen\fld@bkl@h  \fld@bkl@h1cm
+
+\RequirePackage{keyval}
+\define@key{fold@booklet}{vmargin}{\fld@bkl@v#1\relax}
+\define@key{fold@booklet}{v}{\fld@bkl@v#1\relax}
+\define@key{fold@booklet}{hmargin}{\fld@bkl@h#1\relax}
+\define@key{fold@booklet}{h}{\fld@bkl@h#1\relax}
+\define@key{fold@booklet}{margin}{\fld@bkl@h#1\relax\fld@bkl@v#1\relax}
+\define@key{fold@booklet}{margins}{\fld@bkl@h#1\relax\fld@bkl@v#1\relax}
+\DeclareOption*{\begingroup\edef\x{\endgroup\noexpand\setkeys{fold@booklet}{\CurrentOption}}\x}
+\ProcessOptions\relax
+
+\RequirePackage{geometry}
+\RequirePackage{graphicx}
+
+\newcommand*{\foldbooklet@start}{%
+   \clearpage
+   \thispagestyle{empty}%
+   \newgeometry{margin=0cm}%
+   \count@\z@
+   \parindent\z@
+   \@tempdima.25\paperheight \advance\@tempdima-2\fld@bkl@h
+   \@tempdimb.5\paperwidth   \advance\@tempdimb-2\fld@bkl@v
+   \count@\z@
+   \loop\ifnum\count@<8
+      \setbox\count@=\vbox to.5\paperwidth{\hsize.25\paperheight\vfill\foldbooklet@bottom\kern\fld@bkl@v}%
+      \advance\count@\@ne
+   \repeat
+   \def\newblock{%
+      \par\vfill\foldbooklet@bottom\egroup\kern\fld@bkl@h\egroup\kern\fld@bkl@v\egroup
+      \advance\count@\@ne
+      \ifnum\count@>7
+         \PackageError{foldbooklet}%
+                      {Too many pages!\@gobble}%
+                      {You've got too many \string\newblock's.\MessageBreak {foldbooklet} supports at most 8 pages...}%
+         \expandafter\@gobble
+      \else
+         \expandafter\@firstofone
+      \fi
+      {\setbox\count@\vbox\bgroup\kern\fld@bkl@v\hbox\bgroup\kern\fld@bkl@h\vbox to\@tempdimb\bgroup\hsize\@tempdima\linewidth\@tempdima\raggedright}%
+   }%
+   \count@\z@
+   \setbox\count@\vbox\bgroup\kern\fld@bkl@v\hbox\bgroup\kern\fld@bkl@h\vbox to\@tempdimb\bgroup\hsize\@tempdima\linewidth\@tempdima\raggedright
+}
+
+\newenvironment{foldbooklet}[1][]{%
+   \setkeys{fold@booklet}{#1}%
+   \def\foldbooklet@bottom{\hbox to\hsize{\hfill\the\numexpr\count@+1\relax\hfill}}%
+   \def\hangfrom##1{\par\noindent\setbox\z@\hbox{{##1}}\hangindent\wd\z@\box\z@\ignorespaces}%
+   \foldbooklet@start
+  }{%
+   \par\vfill\foldbooklet@bottom\egroup\kern\fld@bkl@h\egroup\kern\fld@bkl@v\egroup
+   \rotatebox[origin=br]{-90}{\box7}\rotatebox[origin=bl]{90}{\box6}%
+   \hrule height0pt
+   \rotatebox[origin=br]{-90}{\box0}\kern-.2\p@\vrule\kern-.2\p@\rotatebox[origin=bl]{90}{\box5}%
+   \hrule height0pt
+   \rotatebox[origin=br]{-90}{\box1}\kern-.2\p@\vrule\kern-.2\p@\rotatebox[origin=bl]{90}{\box4}%
+   \hrule height0pt
+   \rotatebox[origin=br]{-90}{\box2}\rotatebox[origin=bl]{90}{\box3}%
+   \clearpage
+   \aftergroup\restoregeometry
+}
+
+\newenvironment{foldbooklet*}[1][]{%
+   \setkeys{fold@booklet}{#1}%
+   \def\foldbooklet@bottom{\hbox to\hsize{\hfill}}%
+   \def\hangfrom##1{\par\noindent\setbox\z@\hbox{{##1}}\hangindent\wd\z@\box\z@\ignorespaces}%
+   \foldbooklet@start
+  }{\endfoldbooklet}
+
+\endinput
+
+Usage:
+\begin{foldbooklet}
+Stuff on page 1
+\newblock
+Stuff on page 2
+\newblock
+Stuff on page 3
+\newblock
+Stuff on page 4
+\newblock
+Stuff on page 5
+\newblock
+Stuff on page 6
+\newblock
+Stuff on page 7
+\newblock
+Stuff on page 8
+\end{foldbooklet}
+
+# CHANGELOG.md
+
+## 2023/10/09 v0.0b
+Moved definition of `\hangfrom` inside the environments to make it local.
+
+## 2023/05/13 v0.0a
+ Added `\hangfrom`.
+
+## 2022/08/03 v0
+First more or less stable version.
